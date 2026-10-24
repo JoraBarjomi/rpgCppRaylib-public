@@ -23,3 +23,4 @@ class HeroView {
   Layers* current_ = &idle_;
   int facing_ = Facing::DOWN;
 };
+

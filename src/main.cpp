@@ -1,5 +1,6 @@
 #include <math.h>
 
+#include <algorithm>
 #include <iostream>
 
 #include "core/hero/Hero.hpp"
@@ -8,6 +9,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "render/TextureManager.hpp"
+#include "render/heroView/HeroHud.hpp"
 #include "render/heroView/HeroView.hpp"
 #include "render/skeletView/skeletView.hpp"
 #include "render/tilesView/TileView.hpp"
@@ -17,6 +19,8 @@ int main() {
   // Tell the window to use vsync and work on high DPI displays
   SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE |
                  FLAG_FULLSCREEN_MODE);
+  // SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI |
+  // FLAG_WINDOW_RESIZABLE);
 
   // Set window settings and fps max
   int currentFps = 120;
@@ -59,6 +63,9 @@ int main() {
   constexpr float spawn_interval = 3.0f;
   constexpr size_t max_skeletons = 15;
 
+  bool menuOpen = false;
+  Tab tab = Tab::Inventory;
+
   SetTargetFPS(currentFps);
   while (!WindowShouldClose())  // run the loop until the user presses ESCAPE or
                                 // presses the Close button on the window
@@ -70,11 +77,14 @@ int main() {
     // direction x y
     Vector2 dir = {0, 0};
     Vector2 dir2 = {0, 0};
-    camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
-    if (camera.zoom > 3.0f)
-      camera.zoom = 3.0f;
+
+    camera.zoom = expf(logf(camera.zoom) + GetMouseWheelMove() * 0.1f);
+    if (camera.zoom > 4.0f)
+      camera.zoom = 4.0f;
     else if (camera.zoom < 0.1f)
       camera.zoom = 0.1f;
+    // camera.zoom = expf(logf(camera.zoom) + GetMouseWheelMove() * 0.1f);
+    // camera.zoom = std::clamp(camera.zoom, 0.5f, 4.0f);
 
     if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) dir.x += 1;
     if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) dir.x -= 1;
@@ -94,59 +104,81 @@ int main() {
       hero.UpdateFacing(camera);
     }
 
-    std::vector<Rectangle> obstacles;
-    for (const auto& s : skeletons)
-      if (!s.isDead()) obstacles.push_back(s.getHitbox());
-
-    std::vector<Rectangle> obstaclesForOthers;
-    if (!hero.isDead()) obstaclesForOthers.push_back(hero.getHitbox());
-
-    spawn_timer -= dt;
-    if (spawn_timer <= 0.0f && skeletons.size() < max_skeletons) {
-      spawn_timer = spawn_interval;
-
-      Skelet newShkilet = Skelet::createSkelet(0);
-      float rx = hero.getPos().x + static_cast<float>(Random::get(-1000, 1000));
-      float ry = hero.getPos().y + static_cast<float>(Random::get(-1000, 1000));
-      newShkilet.setPos(rx, ry);
-      skeletons.push_back(newShkilet);
-      skeletonsView.push_back(baseSkeletView);
+    SetExitKey(KEY_P);
+    if (IsKeyPressed(KEY_I)) {
+      menuOpen = !(menuOpen && tab == Tab::Inventory);
+      tab = Tab::Inventory;
+    }
+    if (IsKeyPressed(KEY_C)) {
+      menuOpen = !(menuOpen && tab == Tab::Stats);
+      tab = Tab::Stats;
+    }
+    if (IsKeyPressed(KEY_ESCAPE)) {
+      menuOpen = false;
     }
 
-    constexpr int hit_frame = 2;
-    if (hero.getState() == HeroState::Attack && !hero.hitApplied() &&
-        heroView.CurrentFrame() >= hit_frame) {
-      for (auto& s : skeletons) {
-        if (!s.isDead() &&
-            CheckCollisionRecs(hero.getRangebox(), s.getHitbox())) {
-          hero.attackUnit(s);
+    if (!menuOpen) {
+      std::vector<Rectangle> obstacles;
+      for (const auto& s : skeletons)
+        if (!s.isDead()) obstacles.push_back(s.getHitbox());
+
+      std::vector<Rectangle> obstaclesForOthers;
+      if (!hero.isDead()) obstaclesForOthers.push_back(hero.getHitbox());
+
+      spawn_timer -= dt;
+      if (spawn_timer <= 0.0f && skeletons.size() < max_skeletons) {
+        spawn_timer = spawn_interval;
+
+        Skelet newShkilet = Skelet::createSkelet(0);
+        float rx =
+            hero.getPos().x + static_cast<float>(Random::get(-3000, 3000));
+        float ry =
+            hero.getPos().y + static_cast<float>(Random::get(-3000, 3000));
+        newShkilet.setPos(rx, ry);
+        skeletons.push_back(newShkilet);
+        skeletonsView.push_back(baseSkeletView);
+      }
+
+      constexpr int hit_frame = 2;
+      if (hero.getState() == HeroState::Attack && !hero.hitApplied() &&
+          heroView.CurrentFrame() >= hit_frame) {
+        for (auto& s : skeletons) {
+          if (!s.isDead() &&
+              CheckCollisionRecs(hero.getRangebox(), s.getHitbox())) {
+            auto res = hero.attackUnit(s);
+            if (res.expGained > 0) {
+              hero.plusExp(res.expGained);
+            }
+          }
+        }
+        hero.markHitApplied();
+      }
+
+      for (size_t i = 0; i < skeletons.size(); i++) {
+        if (!skeletons[i].hitApplied()) {
+          if (CheckCollisionRecs(skeletons[i].getRangebox(),
+                                 hero.getHitbox())) {
+            skeletons[i].attackUnit(hero);
+          }
+          skeletons[i].markHitApplied();
+        }
+
+        skeletons[i].Update(dt, dir2, obstaclesForOthers, hero.getPos());
+        if (skeletonsView[i].Update(dt, skeletons[i]) &&
+            !skeletons[i].isDead()) {
+          skeletons[i].OnAnimationFinished();
         }
       }
-      hero.markHitApplied();
-    }
 
-    for (size_t i = 0; i < skeletons.size(); i++) {
-      if (!skeletons[i].hitApplied()) {
-        if (CheckCollisionRecs(skeletons[i].getRangebox(), hero.getHitbox())) {
-          skeletons[i].attackUnit(hero);
-        }
-        skeletons[i].markHitApplied();
+      float len_dir{std::hypot(dir.x, dir.y)};
+      if (len_dir > 0) dir = {dir.x / len_dir, dir.y / len_dir};
+
+      hero.Update(dt, dir, is_attack, obstacles);
+      if (heroView.Update(dt, hero)) {
+        hero.OnAnimationFinished();
       }
 
-      skeletons[i].Update(dt, dir2, obstaclesForOthers, hero.getPos());
-      if (skeletonsView[i].Update(dt, skeletons[i]) && !skeletons[i].isDead()) {
-        skeletons[i].OnAnimationFinished();
-      }
-    }
-
-    camera.target = (Vector2){hero.getPos().x + 192, hero.getPos().y + 192};
-
-    float len_dir{std::hypot(dir.x, dir.y)};
-    if (len_dir > 0) dir = {dir.x / len_dir, dir.y / len_dir};
-
-    hero.Update(dt, dir, is_attack, obstacles);
-    if (heroView.Update(dt, hero)) {
-      hero.OnAnimationFinished();
+      camera.target = (Vector2){hero.getPos().x + 192, hero.getPos().y + 192};
     }
 
     // drawing
@@ -161,20 +193,29 @@ int main() {
     for (size_t i = 0; i < skeletons.size(); i++)
       skeletonsView[i].Draw(skeletons[i]);
 
-    DrawRectangleLinesEx(hero.getHitbox(), 2.0f, GREEN);
-    DrawRectangleLinesEx(hero.getRangebox(), 2.0f, GREEN);
+    // DrawRectangleLinesEx(hero.getHitbox(), 2.0f, GREEN);
+    // DrawRectangleLinesEx(hero.getRangebox(), 2.0f, GREEN);
 
-    for (size_t i = 0; i < skeletons.size(); i++) {
-      DrawRectangleLinesEx(skeletons[i].getHitbox(), 2.0f, RED);
-      DrawRectangleLinesEx(skeletons[i].getRangebox(), 2.0f, RED);
-    }
+    // for (size_t i = 0; i < skeletons.size(); i++) {
+    //   DrawRectangleLinesEx(skeletons[i].getHitbox(), 2.0f, RED);
+    //   DrawRectangleLinesEx(skeletons[i].getRangebox(), 2.0f, RED);
+    // }
 
     EndMode2D();
 
     // draw the fps on the screen
     const char* fpsText = 0;
-    fpsText = TextFormat("FPS: %i (target: %i)", GetFPS(), currentFps);
-    DrawText(fpsText, 10, 10, 20, WHITE);
+    fpsText = TextFormat("FPS: %i", GetFPS());
+    DrawText(fpsText, 1800, 10, 20, WHITE);
+    // hp bar and digit of lvl
+    int w = 400, h = 25, margin = 20;
+    DrawHpBar(GetScreenWidth() / 2 - w / 2, GetScreenHeight() - h - margin, w,
+              h, hero.getHp(), hero.getMaxHp(), hero.getHpGhost(), dt);
+    // DrawText(TextFormat("(%i)", hero.getLvl()), 10, 10, 20, GOLD);
+    if (menuOpen && tab == Tab::Stats) {
+      int S = std::max(1, GetScreenHeight() / 360);
+      DrawStats(hero, S);
+    }
 
     // const char* skeletText = 0;
     // skeletText = TextFormat("HERO ATK: %i SKELET HP: %i (is dead: %s)",
@@ -193,3 +234,4 @@ int main() {
   CloseWindow();
   return 0;
 }
+

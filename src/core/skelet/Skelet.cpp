@@ -11,9 +11,8 @@ void Skelet::recalcStats() {
 
 Skelet::Skelet(int lvl, int totalExp, int hp, int armor, int atk,
                int expForKill, int strength, int agility)
-    : Unit(lvl, hp, armor, atk, expForKill, strength, agility),
+    : Unit(lvl, totalExp, hp, armor, atk, expForKill, strength, agility),
       max_hp_{hp},
-      total_exp_{totalExp},
       gold_{} {
   recalcStats();
   transitions_ = {{SkeletState::Idle,
@@ -41,7 +40,7 @@ Skelet Skelet::createSkelet(int lvl) {
   int baseHp{5};
   int baseArmor{0};
   int baseAtk{2};
-  int baseExpForKill{0};
+  int baseExpForKill{100};
   int baseTotalExp{lvl == 0 ? lvlInfo::lvlSteps[0]
                             : lvlInfo::lvlSteps[lvl - 1]};
   int baseStrength{1 + strg};
@@ -121,14 +120,16 @@ void Skelet::Update(float dt, Vector2 dir,
   }
 }
 
-void Skelet::takeDamage(int dmg) {
-  if (state_ == SkeletState::Dead) return;
+int Skelet::takeDamage(int dmg) {
+  if (state_ == SkeletState::Dead) return 0;
   Unit::takeDamage(dmg);
   if (hp_ <= 0) {
     state_ = SkeletState::Dead;
+    return expForKill_;
   } else {
     hurt_timer_ = 0.25;
   }
+  return 0;
 }
 
 bool Skelet::tryMoveX(float step, const std::vector<Rectangle>& obstacles) {

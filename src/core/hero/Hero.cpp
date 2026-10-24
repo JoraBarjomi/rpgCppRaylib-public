@@ -11,9 +11,8 @@ void Hero::recalcStats() {
 
 Hero::Hero(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
            int strength, int agility)
-    : Unit(lvl, hp, armor, atk, expForKill, strength, agility),
+    : Unit(lvl, totalExp, hp, armor, atk, expForKill, strength, agility),
       max_hp_{hp},
-      total_exp_{totalExp},
       gold_{} {
   recalcStats();
   transitions_ = {
@@ -112,14 +111,16 @@ void Hero::UpdateFacing(const Camera2D& camera) {
   }
 }
 
-void Hero::takeDamage(int dmg) {
-  if (state_ == HeroState::Dead) return;
+int Hero::takeDamage(int dmg) {
+  if (state_ == HeroState::Dead) return 0;
   Unit::takeDamage(dmg);
   if (hp_ <= 0) {
     state_ = HeroState::Dead;
+    return expForKill_;
   } else {
     hurt_timer_ = 0.25;
   }
+  return 0;
 }
 
 void Hero::setPlusPos(int x, int y) {

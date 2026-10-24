@@ -41,7 +41,7 @@ class Skelet : public Unit {
 
   static Skelet createSkelet(int lvl = 0);
 
-  void takeDamage(int dmg) override;
+  int takeDamage(int dmg) override;
 
   bool hitApplied() const { return hit_applied_; }
 
@@ -51,6 +51,8 @@ class Skelet : public Unit {
 
   float getHurtTime() const { return hurt_timer_; }
 
+  int getMaxHp() const { return max_hp_; }
+
   Rectangle getHitbox() const;
 
   Rectangle getRangebox() const;
@@ -59,6 +61,8 @@ class Skelet : public Unit {
 
   bool tryMoveX(float step, const std::vector<Rectangle>& obstacles);
   bool tryMoveY(float step, const std::vector<Rectangle>& obstacles);
+
+  mutable float hp_ghost_ = 1.0f;
 
  protected:
   int max_hp_;
@@ -82,3 +86,4 @@ class Skelet : public Unit {
 
   float hurt_timer_ = 0.0f;
 };
+

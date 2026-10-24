@@ -30,6 +30,16 @@ class Hero : public Unit {
 
   void UpdateFacing(const Camera2D& camera);
 
+  int getExp() const { return exp_total_; }
+
+  int getExpLeft() const {
+    return std::abs(getExp() - lvlInfo::lvlSteps[lvl_ + 1]);
+  }
+
+  bool isHavePoints() const { return atrb_points_ > 0; }
+
+  int getPoints() const { return atrb_points_; }
+
   HeroState getState() const { return state_; }
   void setState(HeroState state) { state_ = state; }
 
@@ -45,11 +55,13 @@ class Hero : public Unit {
   bool hitApplied() const { return hit_applied_; }
   void markHitApplied() { hit_applied_ = true; }
 
-  void takeDamage(int dmg) override;
+  int takeDamage(int dmg) override;
 
   void setPlusPos(int x = 0, int y = 0);
 
   float getHurtTime() const { return hurt_timer_; }
+
+  int getMaxHp() const { return max_hp_; }
 
   Rectangle getHitbox() const;
 
@@ -57,11 +69,12 @@ class Hero : public Unit {
 
   void OnAnimationFinished();
 
+  float& getHpGhost() const { return hp_ghost_; }
+
  protected:
   int max_hp_;
-  int total_exp_;
   int atrb_points_;
-  int gold_;
+  int gold_ = 0;
 
  private:
   HeroState state_ = HeroState::Idle;
@@ -72,4 +85,7 @@ class Hero : public Unit {
 
   bool hit_applied_ = false;
   float hurt_timer_ = 0.0f;
+
+  mutable float hp_ghost_ = 1.0f;
 };
+

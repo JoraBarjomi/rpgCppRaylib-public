@@ -30,6 +30,8 @@ void Unit::minusAgility(int agility) {
   }
 }
 
+void Unit::plusExp(int exp) { exp_total_ += exp; }
+
 const bool Unit::isDead() const { return (hp_ <= 0 ? true : false); }
 
 AttackOutcome Unit::attackUnit(Unit& enemy) {
@@ -40,7 +42,7 @@ AttackOutcome Unit::attackUnit(Unit& enemy) {
   // if (!outcome.isPenetratedArmor) return outcome;
   outcome.dmgDealt = std::max(0, atk_);
 
-  enemy.takeDamage(outcome.dmgDealt);
+  outcome.expGained = enemy.takeDamage(outcome.dmgDealt);
 
   // if (enemy.isDead()) {
   // outcome.isEnemyDead = true;
@@ -49,7 +51,8 @@ AttackOutcome Unit::attackUnit(Unit& enemy) {
   return outcome;
 }
 
-void Unit::takeDamage(int dmg) {
+int Unit::takeDamage(int dmg) {
   int real = std::max(1, dmg - armor_);
   hp_ = std::max(0, hp_ - real);
+  return 0;
 }

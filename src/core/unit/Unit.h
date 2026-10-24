@@ -24,6 +24,7 @@ class Unit {
 
  protected:
   int lvl_;
+  int exp_total_;
   int hp_;
   int armor_;
   int atk_;
@@ -31,9 +32,10 @@ class Unit {
   Attributes atrb_;
 
  public:
-  Unit(int lvl, int hp, int armor, int atk, int expForKill, int strength,
-       int agility)
+  Unit(int lvl, int expTotal, int hp, int armor, int atk, int expForKill,
+       int strength, int agility)
       : lvl_{lvl},
+        exp_total_{expTotal},
         hp_{hp},
         armor_{armor},
         atk_{atk},
@@ -48,6 +50,12 @@ class Unit {
   int getArmor() const { return armor_; }
   int getAtk() const { return atk_; }
   int getExpForKill() const { return expForKill_; }
+
+  int getExp() const { return exp_total_; }
+
+  int getExpLeft() const {
+    return std::abs(getExp() - lvlInfo::lvlSteps[lvl_ + 1]);
+  }
 
   int getStrength() const { return atrb_.strength_; }
   int getAgility() const { return atrb_.agility_; }
@@ -67,9 +75,11 @@ class Unit {
   void plusAgility(int agility);
   void minusAgility(int agility);
 
+  void plusExp(int exp);
+
   const bool isDead() const;
 
   virtual AttackOutcome attackUnit(Unit& enemy);
 
-  virtual void takeDamage(int dmg);
+  virtual int takeDamage(int dmg);
 };

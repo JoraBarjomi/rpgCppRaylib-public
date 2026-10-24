@@ -11,7 +11,7 @@ void SkeletView::Load() {
 
   hurt_.push_back(MakeAnim("Skeleton/Skeleton_Idle.png", 4, 0.1f, false));
 
-  death_.push_back(MakeAnim("Skeleton/Character_Death.png", 11, 0.15f, false));
+  death_.push_back(MakeAnim("Skeleton/Character_Death.png", 11, 0.1f, false));
 }
 
 // using this for vector of animations
@@ -83,11 +83,29 @@ bool SkeletView::Update(float dt, const Skelet& skelet) {
     return false;
 }
 
+void SkeletView::DrawHpBar(int x, int y, int hp, int maxHp, float& ghost,
+                           float dt) const {
+  const int W = 34, H = 7;
+  float ratio = std::clamp((float)hp / maxHp, 0.0f, 1.0f);
+  ghost = (ghost > ratio) ? std::max(ratio, ghost - 0.7f * dt) : ratio;
+
+  DrawRectangle(x, y, W + 2, H + 2, BLACK);
+  DrawRectangle(x, y, (int)(W * ghost), H, ORANGE);
+  DrawRectangle(x, y, (int)(W * ratio), H, MAROON);
+}
+
 void SkeletView::Draw(const Skelet& skelet) const {
   float now = GetTime();
   Vector2 drawPos = skelet.getPos();
-  Color tint = WHITE;
 
+  if (!skelet.isDead()) {
+    DrawText(TextFormat("%i", skelet.getLvl()), drawPos.x + 163,
+             drawPos.y + 133, 10, GOLD);
+    DrawHpBar(drawPos.x + 175, drawPos.y + 134, skelet.getHp(),
+              skelet.getMaxHp(), skelet.hp_ghost_, now);
+  }
+
+  Color tint = WHITE;
   if (skelet.getHurtTime() > 0) {
     float t = skelet.getHurtTime() / 0.2f;
     drawPos.x += sinf(now * 91.0f) * 5.0f * t;
