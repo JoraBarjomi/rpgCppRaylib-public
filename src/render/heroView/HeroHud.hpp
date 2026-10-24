@@ -34,7 +34,7 @@ inline void DrawHpBar(int x, int y, int w, int h, int hp, int maxHp,
              h * 0.7f, 1, WHITE);
 }
 
-enum class Tab { Inventory, Stats };
+enum class Tab { Inventory, Stats, LvlUp };
 
 inline int DrawStats(const Hero& hero, int S,
                      const Font& font = GetFontDefault()) {
@@ -80,6 +80,51 @@ inline int DrawStats(const Hero& hero, int S,
           fs, S);
   ui::Row(font, "Attack damage", TextFormat("%d", hero.getAtk()), x2, y2, colW,
           fs, S);
+
+  const char* hint = "[C] close";
+  float hw = MeasureTextEx(font, hint, fs * 0.8f, 1).x;
+  ui::Text(font, hint, X + W - pad - hw, Y + H - pad - fs * 0.8f, fs * 0.8f,
+           ui::kDim);
+
+  return 0;
+}
+
+inline int DrawLvlUp(Hero& hero, int S, const Font& font = GetFontDefault()) {
+  const float fs = 9.0 * S;
+  const float W = 300.0f * S, H = 130.0f * S;
+  const float pad = 12.0f * S, gap = 4.0f * S;
+  const float X = std::floor((GetScreenWidth() - (float)W) / 2.0f);
+  const float Y = std::floor((GetScreenHeight() - (float)H) / 2.0f);
+
+  DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.5f));
+  ui::Panel({X, Y, W, H}, S);
+
+  const float colW = (W - pad * 2.0f - gap) / 2.0f;
+  const float x1 = X + pad, x2 = x1 + colW + gap;
+  float y1 = Y + pad, y2 = Y + pad;
+
+  ui::Header(font, "LVL UP", x1, y1, colW, fs, S);
+  ui::Row(font, "Points:", TextFormat("%d", hero.getPoints()), x2, y2, colW, fs,
+          S);
+  {
+    float rowY = y1;
+    ui::Row(font, "Strength", TextFormat("%d", hero.getStrength()), x1, y1,
+            colW, fs, S);
+    if (ui::Button(font, "+1", {x2, rowY - S, 40, 40}, S)) {
+      hero.allocateStrength(1);
+    }
+    y1 += gap;
+  }
+
+  {
+    float rowY = y1;
+    ui::Row(font, "Agility", TextFormat("%d", hero.getAgility()), x1, y1, colW,
+            fs, S);
+    if (ui::Button(font, "+1", {x2, rowY - S, 40, 40}, S)) {
+      hero.allocateAgility(1);
+    }
+    y1 += gap;
+  }
 
   const char* hint = "[C] close";
   float hw = MeasureTextEx(font, hint, fs * 0.8f, 1).x;

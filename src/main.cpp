@@ -42,16 +42,30 @@ int main() {
   // heroPosition on screen and speed
   bool is_attack = false;
   bool is_attack2 = false;
+  bool showLvlUp = false;
+  float lvlUpDelay = 0.0f;
 
   // Init logger and all signals
   Logger logger;
   hero.onHpChanged.Connect([&logger](int dmg) {
     logger.AddMessage("Hero received dmg: - " + std::to_string(dmg) + " HP",
-                      RED);
+                      WHITE);
   });
 
   hero.onDeath.Connect(
-      [&logger]() { logger.AddMessage("Hero died by Skelet", RED); });
+      [&logger]() { logger.AddMessage("Hero died by Skelet", WHITE); });
+
+  hero.onLvlUp.Connect([&logger](int lvl) {
+    logger.AddMessage("New level " + std::to_string(lvl), GOLD);
+  });
+
+  hero.onExpChanged.Connect([&logger](int exp) {
+    logger.AddMessage("+" + std::to_string(exp) + " exp", WHITE);
+  });
+
+  hero.onAttrPointsChanged.Connect([&logger](int points) {
+    logger.AddMessage("+" + std::to_string(points) + " points", GOLD);
+  });
 
   InitWindow(screenWidth, screenHeight, "RPG");
 
@@ -80,6 +94,7 @@ int main() {
   while (!WindowShouldClose())  // run the loop until the user presses ESCAPE or
                                 // presses the Close button on the window
   {
+    int S = std::max(1, GetScreenHeight() / 360);
     is_attack = false;
     is_attack2 = false;
     // time spend to drawn last frame
@@ -87,6 +102,13 @@ int main() {
     // direction x y
     Vector2 dir = {0, 0};
     Vector2 dir2 = {0, 0};
+
+    if (lvlUpDelay > 0 && showLvlUp) lvlUpDelay -= dt;
+    if (lvlUpDelay <= 0 && showLvlUp) {
+      showLvlUp = false;
+      menuOpen = true;
+      tab = Tab::LvlUp;
+    }
 
     camera.zoom = expf(logf(camera.zoom) + GetMouseWheelMove() * 0.1f);
     if (camera.zoom > 4.0f)
@@ -109,7 +131,7 @@ int main() {
       // is_hurt = true;
       is_attack2 = true;
     }
-    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !menuOpen) {
       is_attack = true;
       hero.UpdateFacing(camera);
     }
@@ -123,6 +145,12 @@ int main() {
       menuOpen = !(menuOpen && tab == Tab::Stats);
       tab = Tab::Stats;
     }
+    if (IsKeyPressed(KEY_U)) {
+      menuOpen = !(menuOpen && tab == Tab::LvlUp);
+      tab = Tab::LvlUp;
+    }
+    if (menuOpen && tab == Tab::LvlUp && hero.getPoints() == 0)
+      menuOpen = false;
     if (IsKeyPressed(KEY_ESCAPE)) {
       menuOpen = false;
     }
@@ -141,9 +169,9 @@ int main() {
 
         Skelet newShkilet = Skelet::createSkelet(0);
         float rx =
-            hero.getPos().x + static_cast<float>(Random::get(-3000, 3000));
+            hero.getPos().x + static_cast<float>(Random::get(-1500, 1500));
         float ry =
-            hero.getPos().y + static_cast<float>(Random::get(-3000, 3000));
+            hero.getPos().y + static_cast<float>(Random::get(-1500, 1500));
         newShkilet.setPos(rx, ry);
         skeletons.push_back(newShkilet);
         skeletonsView.push_back(baseSkeletView);
@@ -158,6 +186,11 @@ int main() {
             auto res = hero.attackUnit(s);
             if (res.expGained > 0) {
               hero.plusExp(res.expGained);
+              auto r = hero.isLvlUp();
+              if (r.isLvlUp) {
+                showLvlUp = true;
+                lvlUpDelay = 3.0f;
+              }
             }
           }
         }
@@ -215,7 +248,6 @@ int main() {
     EndMode2D();
 
     // draw the fps on the screen
-    int S = std::max(1, GetScreenHeight() / 360);
     const char* fpsText = 0;
     fpsText = TextFormat("FPS: %i", GetFPS());
     DrawText(fpsText, 1800, 10, 20, WHITE);
@@ -227,6 +259,10 @@ int main() {
     // DrawText(TextFormat("(%i)", hero.getLvl()), 10, 10, 20, GOLD);
     if (menuOpen && tab == Tab::Stats) {
       DrawStats(hero, S);
+    }
+    if (menuOpen && tab == Tab::LvlUp) {
+      DrawLvlUp(hero, S);
+      showLvlUp = false;
     }
 
     // const char* skeletText = 0;

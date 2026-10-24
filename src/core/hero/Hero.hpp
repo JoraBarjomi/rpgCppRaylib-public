@@ -26,7 +26,7 @@ class Hero : public Unit {
   //
   Signal<int> onHpChanged;
   Signal<int> onMaxHpChanged;
-  Signal<int> onTotalExpChanged;
+  Signal<int> onExpChanged;
   Signal<int> onLvlUp;
   Signal<int> onAttrPointsChanged;
   Signal<int> onStrengthChanged;
@@ -79,6 +79,27 @@ class Hero : public Unit {
   void OnAnimationFinished();
 
   float& getHpGhost() const { return hp_ghost_; }
+
+  void plusExp(int exp) {
+    exp_total_ += exp;
+    onExpChanged.Emit(exp);
+  }
+
+  LvlUpEvent isLvlUp();
+
+  void allocateStrength(int points) {
+    int spend = std::min(points, atrb_points_);
+    atrb_.strength_ += spend;
+    atrb_points_ -= spend;
+    onStrengthChanged.Emit(atrb_.agility_);
+  }
+
+  void allocateAgility(int points) {
+    int spend = std::min(points, atrb_points_);
+    atrb_.agility_ += spend;
+    atrb_points_ -= spend;
+    onAgilityChanged.Emit(atrb_.agility_);
+  }
 
  protected:
   int max_hp_;

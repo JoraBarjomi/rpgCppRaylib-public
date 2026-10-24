@@ -40,7 +40,7 @@ Skelet Skelet::createSkelet(int lvl) {
   int baseHp{5};
   int baseArmor{0};
   int baseAtk{2};
-  int baseExpForKill{100};
+  int baseExpForKill{300};
   int baseTotalExp{lvl == 0 ? lvlInfo::lvlSteps[0]
                             : lvlInfo::lvlSteps[lvl - 1]};
   int baseStrength{1 + strg};

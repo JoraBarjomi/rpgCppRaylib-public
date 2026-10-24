@@ -159,3 +159,19 @@ void Hero::OnAnimationFinished() {
   if (state_ == HeroState::Attack || state_ == HeroState::Hurt)
     state_ = HeroState::Idle;
 }
+
+LvlUpEvent Hero::isLvlUp() {
+  struct LvlUpEvent event;
+  constexpr size_t maxLvl{lvlInfo::lvlSteps.size() - 1};
+  if (lvl_ < maxLvl && exp_total_ >= lvlInfo::lvlSteps[lvl_ + 1]) {
+    lvl_++;
+    onLvlUp.Emit(lvl_);
+    atrb_points_ += 10;
+    onAttrPointsChanged.Emit(atrb_points_);
+    event.isLvlUp = true;
+    event.newLvl = lvl_;
+    event.pointsGained = 10;
+    return event;
+  };
+  return event;
+}

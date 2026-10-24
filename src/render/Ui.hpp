@@ -32,7 +32,7 @@ inline void Text(const Font& f, const char* t, float x, float y, float size,
 inline void TextFading(const Font& f, const char* t, float x, float y,
                        float size, Color c, float alpha) {
   DrawTextEx(f, t, {std::floor(x) + 1, std::floor(y) + 1}, size, 1,
-             Fade(BLACK, 0.8f));
+             Fade(BLACK, 0.4f * alpha));
   DrawTextEx(f, t, {std::floor(x), std::floor(y)}, size, 1, Fade(c, alpha));
 }
 
@@ -62,6 +62,28 @@ inline void Bar(float x, float& y, float w, float h, float ratio, Color fill,
   DrawRectangle((int)x, (int)y, (int)(w * ratio), 1,
                 Fade(WHITE, 0.3f));  // блик
   y += h + 4.0f * S;
+}
+
+inline bool Button(const Font& f, const char* label, Rectangle r, int S) {
+  Vector2 m = GetMousePosition();
+  bool hover = CheckCollisionPointRec(m, r);
+  bool down = hover && IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+
+  Color bg = down    ? Color{35, 25, 25, 255}
+             : hover ? Color{85, 62, 50, 255}
+                     : Color{52, 38, 36, 255};
+
+  DrawRectangle((int)r.x + 2 * S, (int)r.y + 2 * S, (int)r.width, (int)r.height,
+                Fade(BLACK, 0.4f));
+  DrawRectangleRec(r, bg);
+  DrawRectangleLinesEx(r, 2, hover ? kTitle : kBorder);
+
+  float fs = 9.0f * S;
+  Vector2 sz = MeasureTextEx(f, label, fs, 1);
+  float ty = r.y + (r.height - sz.y) / 2 + (down ? S : 0);
+  Text(f, label, r.x + (r.width - sz.x) / 2, ty, fs, hover ? kTitle : kText);
+
+  return hover && IsMouseButtonReleased(MOUSE_BUTTON_LEFT);
 }
 
 }  // namespace ui

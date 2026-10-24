@@ -16,12 +16,11 @@ void Logger::Update(float dt) {
 
 void Logger::Draw(int x, int y, int S) const {
   const float W = 200, H = 40;
-  const float fs = 5.0 * S;
+  const float fs = 8 * S;
   const float pad = 2.0f * S, gap = 16.0f * S;
   const float colW = (W - pad * 2.0f - gap) / 2.0f;
   const float x1 = x + pad, x2 = x1 + colW + gap;
   float y1 = y + pad, y2 = y + pad;
-  ui::Header(GetFontDefault(), "LOGS", x1, y1, colW, fs, S);
 
   int offsetY = 0;
   for (const auto& log : logs) {

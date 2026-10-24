@@ -30,8 +30,6 @@ void Unit::minusAgility(int agility) {
   }
 }
 
-void Unit::plusExp(int exp) { exp_total_ += exp; }
-
 const bool Unit::isDead() const { return (hp_ <= 0 ? true : false); }
 
 AttackOutcome Unit::attackUnit(Unit& enemy) {
