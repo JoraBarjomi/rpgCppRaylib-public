@@ -8,6 +8,7 @@
 #include "random.h"
 #include "raylib.h"
 #include "raymath.h"
+#include "render/SoundManager.hpp"
 #include "render/TextureManager.hpp"
 #include "render/heroView/HeroHud.hpp"
 #include "render/heroView/HeroView.hpp"
@@ -47,16 +48,63 @@ int main() {
 
   // Init logger and all signals
   Logger logger;
-  hero.onHpChanged.Connect([&logger](int dmg) {
+
+  InitWindow(screenWidth, screenHeight, "RPG");
+
+  SoundManager audio;
+  // Load a texture from the resources directory
+  SearchAndSetResourceDir("resources");
+
+  // Load all textures for heroView
+  heroView.Load();
+  baseSkeletView.Load();
+  tiles.Load();
+  audio.Load("hit", "sounds/hero/hit/pain3.wav", 0.6);
+  audio.Load("death", "sounds/hero/death/die2.wav", 0.6);
+  audio.Load("lvlUp", "sounds/hero/lvlUp/lvlUp.mp3", 0.6);
+  audio.Load("step1", "sounds/hero/step/step1.wav");
+  audio.Load("step2", "sounds/hero/step/step2.wav");
+  audio.Load("slash1", "sounds/hero/swordsSounds/slash1.wav", 0.6);
+  audio.Load("slash2", "sounds/hero/swordSounds/slash2.wav", 0.6);
+  audio.Load("slash3", "sounds/hero/swordSounds/slash3.wav", 0.6);
+  audio.Load("slash4", "sounds/hero/swordSounds/slash4.wav", 0.6);
+  audio.Load("swordHit1", "sounds/hero/swordSounds/swordHit1.wav", 0.6);
+  audio.Load("swordHit2", "sounds/hero/swordSounds/swordHit2.wav", 0.6);
+  audio.Load("swordHit3", "sounds/hero/swordSounds/swordHit3.wav", 0.6);
+  audio.Load("skeletDeath", "sounds/skelet/skeletDeath.wav", 0.6);
+  audio.Load("skeletHurt", "sounds/skelet/skeletHurt.wav", 0.6);
+  audio.Load("skeletStep", "sounds/skelet/skeletStep.wav", 0.6);
+
+  hero.onHpChanged.Connect([&logger, &audio](int dmg) {
     logger.AddMessage("Hero received dmg: - " + std::to_string(dmg) + " HP",
                       WHITE);
+    audio.Play("hit", true);
   });
 
-  hero.onDeath.Connect(
-      [&logger]() { logger.AddMessage("Hero died by Skelet", WHITE); });
+  hero.onDeath.Connect([&logger, &audio]() {
+    logger.AddMessage("Hero died by Skelet", WHITE);
+    audio.Play("death", true);
+  });
 
-  hero.onLvlUp.Connect([&logger](int lvl) {
+  hero.onLvlUp.Connect([&logger, &audio](int lvl) {
     logger.AddMessage("New level " + std::to_string(lvl), GOLD);
+    audio.Play("lvlUp");
+  });
+
+  hero.onStep.Connect([&audio]() {
+    int rnd = Random::get(1, 100);
+    if (rnd > 50)
+      audio.Play("step1", true);
+    else
+      audio.Play("step2", true);
+  });
+
+  hero.onAttack.Connect([&audio]() {
+    audio.Play("slash" + std::to_string(Random::get(1, 4)), true);
+  });
+
+  hero.onHitEnemy.Connect([&audio]() {
+    audio.Play("swordHit" + std::to_string(Random::get(1, 3)), true);
   });
 
   hero.onExpChanged.Connect([&logger](int exp) {
@@ -66,16 +114,6 @@ int main() {
   hero.onAttrPointsChanged.Connect([&logger](int points) {
     logger.AddMessage("+" + std::to_string(points) + " points", GOLD);
   });
-
-  InitWindow(screenWidth, screenHeight, "RPG");
-
-  // Load a texture from the resources directory
-  SearchAndSetResourceDir("resources");
-
-  // Load all textures for heroView
-  heroView.Load();
-  baseSkeletView.Load();
-  tiles.Load();
 
   Camera2D camera;
   camera.target = (Vector2){hero.getPos().x + 192, hero.getPos().y + 192};
@@ -125,7 +163,6 @@ int main() {
 
     if (IsKeyPressed(KEY_L)) {
       hero.attackUnit(hero);
-      // is_dead = true; goState че то такое
     }
     if (IsKeyPressed(KEY_H)) {
       // is_hurt = true;
@@ -134,6 +171,7 @@ int main() {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !menuOpen) {
       is_attack = true;
       hero.UpdateFacing(camera);
+      hero.onAttack.Emit();
     }
 
     SetExitKey(KEY_P);
@@ -184,6 +222,11 @@ int main() {
           if (!s.isDead() &&
               CheckCollisionRecs(hero.getRangebox(), s.getHitbox())) {
             auto res = hero.attackUnit(s);
+            if (res.isEnemyDead)
+              audio.Play("skeletDeath", true);
+            else
+              audio.Play("skeletHurt", true);
+
             if (res.expGained > 0) {
               hero.plusExp(res.expGained);
               auto r = hero.isLvlUp();
@@ -202,6 +245,7 @@ int main() {
           if (CheckCollisionRecs(skeletons[i].getRangebox(),
                                  hero.getHitbox())) {
             skeletons[i].attackUnit(hero);
+            hero.onHitEnemy.Emit();
           }
           skeletons[i].markHitApplied();
         }
@@ -276,6 +320,7 @@ int main() {
     EndDrawing();
   }
 
+  audio.~SoundManager();
   heroView.Unload();
   baseSkeletView.Unload();
   tiles.Unload();

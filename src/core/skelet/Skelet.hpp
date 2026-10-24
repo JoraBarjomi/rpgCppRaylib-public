@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../../random.h"
+#include "../../render/Observer.hpp"
 #include "../../render/TextureManager.hpp"
 #include "../unit/Unit.h"
 #include "raylib.h"
@@ -22,6 +23,12 @@ enum class SkeletState {
 
 class Skelet : public Unit {
  public:
+  Signal<> onStep;
+  Signal<> onAttack;
+  Signal<> onHitEnemy;
+  Signal<int> onHpChanged;
+  Signal<> onDeath;
+
   Skelet(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
          int strength, int agility);
   ~Skelet() = default;
@@ -86,4 +93,3 @@ class Skelet : public Unit {
 
   float hurt_timer_ = 0.0f;
 };
-

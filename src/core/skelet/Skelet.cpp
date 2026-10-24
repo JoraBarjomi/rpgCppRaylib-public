@@ -122,12 +122,14 @@ void Skelet::Update(float dt, Vector2 dir,
 
 int Skelet::takeDamage(int dmg) {
   if (state_ == SkeletState::Dead) return 0;
-  Unit::takeDamage(dmg);
+  int dmgRes = Unit::takeDamage(dmg);
   if (hp_ <= 0) {
     state_ = SkeletState::Dead;
+    onDeath.Emit();
     return expForKill_;
   } else {
     hurt_timer_ = 0.25;
+    onHpChanged.Emit(dmgRes);
   }
   return 0;
 }

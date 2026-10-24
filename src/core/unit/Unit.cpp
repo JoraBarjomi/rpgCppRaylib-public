@@ -41,11 +41,10 @@ AttackOutcome Unit::attackUnit(Unit& enemy) {
   outcome.dmgDealt = std::max(0, atk_);
 
   outcome.expGained = enemy.takeDamage(outcome.dmgDealt);
-
-  // if (enemy.isDead()) {
-  // outcome.isEnemyDead = true;
-  // outcome.expGained = enemy.getExpForKill();
-  // }
+  if (enemy.isDead()) {
+    outcome.isEnemyDead = true;
+    // outcome.expGained = enemy.getExpForKill();
+  }
   return outcome;
 }
 

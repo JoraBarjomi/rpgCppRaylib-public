@@ -3,7 +3,7 @@
 void Hero::recalcStats() {
   max_hp_ = max_hp_ + std::ceil(std::exp(lvl_ / 3) - 1) +
             std::ceil(atrb_.strength_ * 0.25);
-  //   onMaxHpChanged.Emit(m_maxHp);
+  onMaxHpChanged.Emit(max_hp_);
   armor_ = std::ceil(atrb_.agility_ / 2.0);
   atk_ = atk_ + atrb_.strength_;
   hp_ = max_hp_;
@@ -63,6 +63,11 @@ void Hero::Update(float dt, Vector2 dir, bool is_attack,
     hit_applied_ = false;
   } else if ((dir.x != 0 || dir.y != 0) && !busy) {
     state_ = HeroState::Run;
+    step_timer_ -= dt;
+    if (step_timer_ <= 0.0f) {
+      onStep.Emit();
+      step_timer_ = 0.35;
+    }
 
     float oldX = pos_.x;
     pos_.x += dir.x * speed_ * dt;
@@ -114,13 +119,13 @@ void Hero::UpdateFacing(const Camera2D& camera) {
 int Hero::takeDamage(int dmg) {
   if (state_ == HeroState::Dead) return 0;
   int dmgRes = Unit::takeDamage(dmg);
-  onHpChanged.Emit(dmgRes);
   if (hp_ <= 0) {
     state_ = HeroState::Dead;
     onDeath.Emit();
     return expForKill_;
   } else {
     hurt_timer_ = 0.25;
+    onHpChanged.Emit(dmgRes);
   }
   return 0;
 }

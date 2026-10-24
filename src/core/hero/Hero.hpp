@@ -34,6 +34,9 @@ class Hero : public Unit {
   Signal<> onDeath;
   Signal<> onInventoryChanged;
   Signal<int> onGoldChanged;
+  Signal<> onStep;
+  Signal<> onAttack;
+  Signal<> onHitEnemy;
   //
 
   Hero(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
@@ -92,6 +95,7 @@ class Hero : public Unit {
     atrb_.strength_ += spend;
     atrb_points_ -= spend;
     onStrengthChanged.Emit(atrb_.agility_);
+    recalcStats();
   }
 
   void allocateAgility(int points) {
@@ -117,4 +121,5 @@ class Hero : public Unit {
   float hurt_timer_ = 0.0f;
 
   mutable float hp_ghost_ = 1.0f;
+  float step_timer_ = 0.0f;
 };
