@@ -11,6 +11,7 @@
 #include "render/TextureManager.hpp"
 #include "render/heroView/HeroHud.hpp"
 #include "render/heroView/HeroView.hpp"
+#include "render/logger/Logger.hpp"
 #include "render/skeletView/skeletView.hpp"
 #include "render/tilesView/TileView.hpp"
 #include "resource_dir.h"  // utility header for SearchAndSetResourceDir
@@ -40,8 +41,17 @@ int main() {
 
   // heroPosition on screen and speed
   bool is_attack = false;
-
   bool is_attack2 = false;
+
+  // Init logger and all signals
+  Logger logger;
+  hero.onHpChanged.Connect([&logger](int dmg) {
+    logger.AddMessage("Hero received dmg: - " + std::to_string(dmg) + " HP",
+                      RED);
+  });
+
+  hero.onDeath.Connect(
+      [&logger]() { logger.AddMessage("Hero died by Skelet", RED); });
 
   InitWindow(screenWidth, screenHeight, "RPG");
 
@@ -177,6 +187,7 @@ int main() {
       if (heroView.Update(dt, hero)) {
         hero.OnAnimationFinished();
       }
+      logger.Update(dt);
 
       camera.target = (Vector2){hero.getPos().x + 192, hero.getPos().y + 192};
     }
@@ -204,16 +215,17 @@ int main() {
     EndMode2D();
 
     // draw the fps on the screen
+    int S = std::max(1, GetScreenHeight() / 360);
     const char* fpsText = 0;
     fpsText = TextFormat("FPS: %i", GetFPS());
     DrawText(fpsText, 1800, 10, 20, WHITE);
+    logger.Draw(0, 0, S);
     // hp bar and digit of lvl
     int w = 400, h = 25, margin = 20;
     DrawHpBar(GetScreenWidth() / 2 - w / 2, GetScreenHeight() - h - margin, w,
               h, hero.getHp(), hero.getMaxHp(), hero.getHpGhost(), dt);
     // DrawText(TextFormat("(%i)", hero.getLvl()), 10, 10, 20, GOLD);
     if (menuOpen && tab == Tab::Stats) {
-      int S = std::max(1, GetScreenHeight() / 360);
       DrawStats(hero, S);
     }
 
@@ -234,4 +246,3 @@ int main() {
   CloseWindow();
   return 0;
 }
-

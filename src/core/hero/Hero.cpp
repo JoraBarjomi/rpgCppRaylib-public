@@ -113,9 +113,11 @@ void Hero::UpdateFacing(const Camera2D& camera) {
 
 int Hero::takeDamage(int dmg) {
   if (state_ == HeroState::Dead) return 0;
-  Unit::takeDamage(dmg);
+  int dmgRes = Unit::takeDamage(dmg);
+  onHpChanged.Emit(dmgRes);
   if (hp_ <= 0) {
     state_ = HeroState::Dead;
+    onDeath.Emit();
     return expForKill_;
   } else {
     hurt_timer_ = 0.25;

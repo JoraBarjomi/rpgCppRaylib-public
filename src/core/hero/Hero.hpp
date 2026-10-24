@@ -5,7 +5,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../../render/Observer.hpp"
 #include "../../render/TextureManager.hpp"
+#include "../../render/logger/Logger.hpp"
 #include "../unit/Unit.h"
 #include "raylib.h"
 
@@ -21,6 +23,19 @@ enum class HeroState {
 
 class Hero : public Unit {
  public:
+  //
+  Signal<int> onHpChanged;
+  Signal<int> onMaxHpChanged;
+  Signal<int> onTotalExpChanged;
+  Signal<int> onLvlUp;
+  Signal<int> onAttrPointsChanged;
+  Signal<int> onStrengthChanged;
+  Signal<int> onAgilityChanged;
+  Signal<> onDeath;
+  Signal<> onInventoryChanged;
+  Signal<int> onGoldChanged;
+  //
+
   Hero(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
        int strength, int agility);
   ~Hero() = default;
@@ -29,12 +44,6 @@ class Hero : public Unit {
               std::vector<Rectangle> obstacles);
 
   void UpdateFacing(const Camera2D& camera);
-
-  int getExp() const { return exp_total_; }
-
-  int getExpLeft() const {
-    return std::abs(getExp() - lvlInfo::lvlSteps[lvl_ + 1]);
-  }
 
   bool isHavePoints() const { return atrb_points_ > 0; }
 
@@ -88,4 +97,3 @@ class Hero : public Unit {
 
   mutable float hp_ghost_ = 1.0f;
 };
-

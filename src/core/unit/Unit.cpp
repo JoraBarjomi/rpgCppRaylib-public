@@ -54,5 +54,5 @@ AttackOutcome Unit::attackUnit(Unit& enemy) {
 int Unit::takeDamage(int dmg) {
   int real = std::max(1, dmg - armor_);
   hp_ = std::max(0, hp_ - real);
-  return 0;
+  return real;
 }
