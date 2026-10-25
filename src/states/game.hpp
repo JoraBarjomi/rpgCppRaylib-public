@@ -176,7 +176,7 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
       if (spawn_timer <= 0.0f && skeletons.size() < max_skeletons) {
         spawn_timer = spawn_interval;
         for (size_t i = 0; i < 3; i++) {
-          Skelet newShkilet = Skelet::createSkelet(Random::get(0, 2));
+          Skelet newShkilet = Skelet::createSkelet(Random::get(0, 1));
           float rx =
               hero.getPos().x + static_cast<float>(Random::get(-2500, 2500));
           float ry =
