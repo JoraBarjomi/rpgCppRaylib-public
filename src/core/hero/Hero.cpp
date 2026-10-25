@@ -4,8 +4,9 @@ void Hero::recalcStats() {
   max_hp_ = max_hp_ + std::ceil(std::exp(lvl_ / 3) - 1) +
             std::ceil(atrb_.strength_ * 0.25);
   onMaxHpChanged.Emit(max_hp_);
-  armor_ = std::ceil(atrb_.agility_ / 2.0);
-  atk_ = atk_ + atrb_.strength_;
+  armor_ = armor_ + std::ceil(atrb_.agility_ / 2.0);
+  atk_ = atk_ + std::ceil(std::exp(atrb_.strength_ / 3) - 1) +
+         std::ceil(atrb_.strength_ * 0.25);
   hp_ = max_hp_;
 }
 
@@ -166,16 +167,17 @@ void Hero::OnAnimationFinished() {
 }
 
 LvlUpEvent Hero::isLvlUp() {
+  const int pointsPerlvl = 10;
   struct LvlUpEvent event;
   constexpr size_t maxLvl{lvlInfo::lvlSteps.size() - 1};
   if (lvl_ < maxLvl && exp_total_ >= lvlInfo::lvlSteps[lvl_ + 1]) {
     lvl_++;
     onLvlUp.Emit(lvl_);
-    atrb_points_ += 10;
+    atrb_points_ += pointsPerlvl;
     onAttrPointsChanged.Emit(atrb_points_);
     event.isLvlUp = true;
     event.newLvl = lvl_;
-    event.pointsGained = 10;
+    event.pointsGained = pointsPerlvl;
     return event;
   };
   return event;

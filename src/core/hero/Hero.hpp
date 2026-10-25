@@ -107,7 +107,7 @@ class Hero : public Unit {
 
  protected:
   int max_hp_;
-  int atrb_points_;
+  int atrb_points_ = 0;
   int gold_ = 0;
 
  private:

@@ -34,7 +34,7 @@ inline void DrawHpBar(int x, int y, int w, int h, int hp, int maxHp,
              h * 0.7f, 1, WHITE);
 }
 
-enum class Tab { Inventory, Stats, LvlUp };
+enum class Tab { Inventory, Stats, LvlUp, Restart };
 
 inline int DrawStats(const Hero& hero, int S,
                      const Font& font = GetFontDefault()) {
@@ -130,6 +130,41 @@ inline int DrawLvlUp(Hero& hero, int S, const Font& font = GetFontDefault()) {
   float hw = MeasureTextEx(font, hint, fs * 0.8f, 1).x;
   ui::Text(font, hint, X + W - pad - hw, Y + H - pad - fs * 0.8f, fs * 0.8f,
            ui::kDim);
+
+  return 0;
+}
+
+inline int DrawQuitRestartMenu(Hero& hero, int S,
+                               const Font& font = GetFontDefault()) {
+  const float fs = 9.0 * S;
+  const float W = 300.0f * S, H = 130.0f * S;
+  const float pad = 12.0f * S, gap = 64.0f * S;
+  const float X = std::floor((GetScreenWidth() - (float)W) / 2.0f);
+  const float Y = std::floor((GetScreenHeight() - (float)H) / 2.0f);
+
+  DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(MAROON, 0.8f));
+  //   ui::Panel({X, Y, W, H}, S);
+
+  const float colW = (W - pad * 2.0f - gap) / 2.0f;
+  float x1 = X, x2 = x1 + colW + gap;
+  float y1 = Y, y2 = Y;
+
+  ui::Header(font, "GAME OVER", x1, y1, colW, fs, S);
+
+  {
+    float rowX = x1;
+    if (ui::Button(font, "Restart", {rowX, y1 - S, 100, 40}, S)) {
+      return 1;
+    }
+    x1 += gap;
+  }
+  {
+    float rowX = x1;
+    if (ui::Button(font, "Quit", {x1, y1 - S, 100, 40}, S)) {
+      return 2;
+    }
+    x1 += gap;
+  }
 
   return 0;
 }

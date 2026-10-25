@@ -5,7 +5,7 @@ void Skelet::recalcStats() {
             std::ceil(atrb_.strength_ * 0.25);
   //   onMaxHpChanged.Emit(m_maxHp);
   armor_ = std::ceil(atrb_.agility_ / 2.0);
-  atk_ = atk_ + atrb_.strength_;
+  atk_ = atk_ + std::ceil(atrb_.strength_ * 0.15);
   hp_ = max_hp_;
 }
 

@@ -11,8 +11,8 @@ enum unitTypes { wolf, goblin, orc, maxUnitTypes };
 }
 
 namespace lvlInfo {
-constexpr std::array<int, 10> lvlSteps{0,    500,  1000, 1500, 2000,
-                                       2500, 3000, 3500, 4000, 4500};
+constexpr std::array<int, 11> lvlSteps{0,    500,  1000, 1500, 2000, 2500,
+                                       3000, 3500, 4000, 4500, 5000};
 };
 
 class Unit {
