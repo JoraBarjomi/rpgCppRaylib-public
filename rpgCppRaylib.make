@@ -121,6 +121,7 @@ OBJECTS :=
 GENERATED += $(OBJDIR)/Hero.o
 GENERATED += $(OBJDIR)/HeroView.o
 GENERATED += $(OBJDIR)/Logger.o
+GENERATED += $(OBJDIR)/PotionView.o
 GENERATED += $(OBJDIR)/Skelet.o
 GENERATED += $(OBJDIR)/TextureManager.o
 GENERATED += $(OBJDIR)/TileView.o
@@ -135,6 +136,7 @@ GENERATED += $(OBJDIR)/stateManager.o
 OBJECTS += $(OBJDIR)/Hero.o
 OBJECTS += $(OBJDIR)/HeroView.o
 OBJECTS += $(OBJDIR)/Logger.o
+OBJECTS += $(OBJDIR)/PotionView.o
 OBJECTS += $(OBJDIR)/Skelet.o
 OBJECTS += $(OBJDIR)/TextureManager.o
 OBJECTS += $(OBJDIR)/TileView.o
@@ -237,6 +239,9 @@ $(OBJDIR)/TextureManager.o: src/render/TextureManager.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/HeroView.o: src/render/heroView/HeroView.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/PotionView.o: src/render/itemsView/PotionView.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Logger.o: src/render/logger/Logger.cpp

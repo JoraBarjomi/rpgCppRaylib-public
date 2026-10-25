@@ -22,8 +22,7 @@ class SkeletView {
 
  private:
   using Layers = std::vector<Animation>;
-  Layers idle_, run_, attack_, hurt_, death_;
+  Layers idle_, run_, runCd_, attack_, hurt_, death_;
   Layers* current_ = &idle_;
   int facing_ = DOWN;
 };
-

@@ -16,6 +16,7 @@ class SkeletView;
 enum class SkeletState {
   Idle,
   Run,
+  RunCooldown,
   Attack,
   Hurt,
   Dead,
@@ -76,6 +77,9 @@ class Skelet : public Unit {
   int total_exp_;
   int atrb_points_;
   int gold_;
+
+  int base_hp_ = 3;
+  int base_atk = 2;
 
  private:
   SkeletState state_ = SkeletState::Idle;

@@ -50,14 +50,14 @@ bool Inventory::useItem(int itemId, Hero& player) {
     if (m_slots[i].item->isConsumable()) {
       auto* c{static_cast<ItemConsumable*>(m_slots[i].item.get())};
       c->use(player);
-      removeItem(itemId, 1);
+      // removeItem(itemId, 1);
       return true;
     }
     if (m_slots[i].item->isEquipable()) {
       auto* e{static_cast<ItemEquipable*>(m_slots[i].item.get())};
       bool isEquiped = e->use(player);
       if (isEquiped) {
-        removeItem(itemId, 1);
+        // removeItem(itemId, 1);
         return true;
       }
       return false;

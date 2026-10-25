@@ -9,6 +9,8 @@ void SkeletView::Load() {
   /*    */
   run_.push_back(MakeAnim("Skeleton/Skeleton_Move.png", 6, 0.1f));
 
+  runCd_.push_back(MakeAnim("Skeleton/Skeleton_Move.png", 6, 0.15f));
+
   hurt_.push_back(MakeAnim("Skeleton/Skeleton_Idle.png", 4, 0.1f, false));
 
   death_.push_back(MakeAnim("Skeleton/Character_Death.png", 11, 0.1f, false));
@@ -38,6 +40,9 @@ bool SkeletView::Update(float dt, const Skelet& skelet) {
       break;
     case SkeletState::Run:
       wanted = &run_;
+      break;
+    case SkeletState::RunCooldown:
+      wanted = &runCd_;
       break;
     case SkeletState::Attack:
       wanted = &attack_;
@@ -125,6 +130,14 @@ void SkeletView::Draw(const Skelet& skelet) const {
         100 * (0.5f + 0.5f * sinf(now * 30.0f)));  // pulse effect
     tint = Color{255, static_cast<unsigned char>(255 - k), 0, 255};
   }
+
+  if (skelet.getState() == SkeletState::RunCooldown) {
+    Vector2 center = {drawPos.x + 192, drawPos.y + 192};
+    unsigned char k = static_cast<unsigned char>(
+        100 * (0.5f + 0.5f * sinf(now * 10.0f)));  // pulse effect
+    tint = Color{255, static_cast<unsigned char>(255 - k), 0, 255};
+  }
+
   for (auto& layer : *current_) {
     layer.Draw(drawPos, 3.0f, tint);
   }

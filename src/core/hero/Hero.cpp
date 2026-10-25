@@ -1,15 +1,5 @@
 #include "Hero.hpp"
 
-void Hero::recalcStats() {
-  max_hp_ = max_hp_ + std::ceil(std::exp(lvl_ / 3) - 1) +
-            std::ceil(atrb_.strength_ * 0.25);
-  onMaxHpChanged.Emit(max_hp_);
-  armor_ = armor_ + std::ceil(atrb_.agility_ / 2.0);
-  atk_ = atk_ + std::ceil(std::exp(atrb_.strength_ / 3) - 1) +
-         std::ceil(atrb_.strength_ * 0.25);
-  hp_ = max_hp_;
-}
-
 Hero::Hero(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
            int strength, int agility)
     : Unit(lvl, totalExp, hp, armor, atk, expForKill, strength, agility),
@@ -28,6 +18,16 @@ Hero::Hero(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
 
       {HeroState::Dead, {}}};
 };
+
+void Hero::recalcStats() {
+  max_hp_ = base_hp_ + std::ceil(std::exp(lvl_ / 3) - 1) +
+            std::ceil(atrb_.strength_ * 0.25);
+  onMaxHpChanged.Emit(max_hp_);
+  armor_ = std::ceil(atrb_.agility_ / 2.0);
+  atk_ = base_atk_ + std::ceil(std::exp(atrb_.strength_ / 3) - 1) +
+         std::ceil(atrb_.strength_ * 0.25);
+  hp_ = max_hp_;
+}
 
 constexpr int pointsPerLvl{10};
 Hero Hero::createHero(int lvl) {

@@ -12,6 +12,7 @@
 #include "render/TextureManager.hpp"
 #include "render/heroView/HeroHud.hpp"
 #include "render/heroView/HeroView.hpp"
+#include "render/itemsView/PotionView.hpp"
 #include "render/logger/Logger.hpp"
 #include "render/skeletView/skeletView.hpp"
 #include "render/tilesView/TileView.hpp"
@@ -41,6 +42,8 @@ int main() {
 
   TileView tiles;
 
+  PotionView potions;
+
   // heroPosition on screen and speed
   // bool is_attack = false;
   // bool is_attack2 = false;
@@ -59,6 +62,7 @@ int main() {
   // Load all textures for heroView
   heroView.Load();
   baseSkeletView.Load();
+  potions.Load();
   tiles.Load();
   audio.Load("hit", "sounds/hero/hit/pain3.wav", 0.6);
   audio.Load("death", "sounds/hero/death/die2.wav", 0.6);
@@ -78,10 +82,10 @@ int main() {
 
   GameResult result;
   do {
-    result = RunSession(audio, heroView, baseSkeletView, tiles);
+    result = RunSession(audio, heroView, baseSkeletView, tiles, potions);
   } while (result == GameResult::Restart);
 
-  audio.~SoundManager();
+  potions.Unload();
   heroView.Unload();
   baseSkeletView.Unload();
   tiles.Unload();

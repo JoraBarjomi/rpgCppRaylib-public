@@ -118,6 +118,8 @@ class Hero : public Unit {
   int max_hp_;
   int atrb_points_ = 0;
   int gold_ = 0;
+  int base_hp_ = 4;
+  int base_atk_ = 2;
 
  private:
   HeroState state_ = HeroState::Idle;

@@ -6,6 +6,7 @@
 
 #include "../ItemView.hpp"
 #include "../Ui.hpp"
+#include "../itemsView/PotionView.hpp"
 #include "raylib.h"
 
 inline void DrawHpBar(int x, int y, int w, int h, int hp, int maxHp,
@@ -182,7 +183,8 @@ inline std::vector<ItemView> MakeInvView(const Hero& hero) {
   return out;
 }
 
-inline int DrawInventory(const std::vector<ItemView>& slots, int S,
+inline int DrawInventory(const std::vector<ItemView>& slots,
+                         const PotionView& potions, int S,
                          const Font& font = GetFontDefault()) {
   constexpr int COLS = 6, ROWS = 12;
 
@@ -222,8 +224,25 @@ inline int DrawInventory(const std::vector<ItemView>& slots, int S,
         r, 1, hover ? Color{220, 180, 90, 255} : Color{80, 65, 50, 255});
 
     if (i < (int)slots.size() && !slots[i].empty()) {
-      DrawRectangle((int)r.x + 4 * S, (int)r.y + 4 * S, cell - 8 * S,
-                    cell - 8 * S, {150, 120, 80, 255});
+      //       DrawRectangle((int)r.x + 4 * S, (int)r.y + 4 * S, cell - 8 * S,
+      //                     cell - 8 * S, {150, 120, 80, 255});
+      //       DrawTextureRec(potions.potionSmall, r, {r.x + 4 * S, r.y + 4 *
+      //       S},
+      //      {150, 120, 80, 255});
+
+      if (slots[i].iconIndex == 1)
+        DrawTextureRec(potions.potions.tex, potions.potionSmallRec,
+                       {r.x + 4 * S, r.y + 4 * S}, {150, 120, 80, 255});
+      else if (slots[i].iconIndex == 2)
+        DrawTextureRec(potions.potions.tex, potions.potionMediumRec,
+                       {r.x + 4 * S, r.y + 4 * S}, {150, 120, 80, 255});
+      else if (slots[i].iconIndex == 3)
+        DrawTextureRec(potions.potions.tex, potions.potionStrongRec,
+                       {r.x + 4 * S, r.y + 4 * S}, {150, 120, 80, 255});
+      else
+        DrawRectangle((int)r.x + 4 * S, (int)r.y + 4 * S, cell - 8 * S,
+                      cell - 8 * S, {150, 120, 80, 255});
+
       if (slots[i].count > 1) {
         DrawTextEx(font, TextFormat("%d", slots[i].count),
                    {r.x + r.width - 8.0f * S, r.y + r.height - 9.0f * S},

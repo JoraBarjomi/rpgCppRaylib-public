@@ -1,14 +1,5 @@
 #include "Skelet.hpp"
 
-void Skelet::recalcStats() {
-  max_hp_ = max_hp_ + std::ceil(std::exp(lvl_ / 3) - 1) +
-            std::ceil(atrb_.strength_ * 0.25);
-  //   onMaxHpChanged.Emit(m_maxHp);
-  armor_ = std::ceil(atrb_.agility_ / 2.0);
-  atk_ = atk_ + std::ceil(atrb_.strength_ * 0.15);
-  hp_ = max_hp_;
-}
-
 Skelet::Skelet(int lvl, int totalExp, int hp, int armor, int atk,
                int expForKill, int strength, int agility)
     : Unit(lvl, totalExp, hp, armor, atk, expForKill, strength, agility),
@@ -31,6 +22,15 @@ Skelet::Skelet(int lvl, int totalExp, int hp, int armor, int atk,
                   {SkeletState::Dead, {}}};
 };
 
+void Skelet::recalcStats() {
+  max_hp_ = base_hp_ + std::ceil(std::exp(lvl_ / 3) - 1) +
+            std::ceil(atrb_.strength_ * 0.25);
+  //   onMaxHpChanged.Emit(m_maxHp);
+  armor_ = std::ceil(atrb_.agility_ / 2.0);
+  atk_ = base_atk + std::ceil(atrb_.strength_ * 0.15);
+  hp_ = max_hp_;
+}
+
 constexpr int pointsPerLvl{10};
 Skelet Skelet::createSkelet(int lvl) {
   int all{lvl * pointsPerLvl};
@@ -40,7 +40,7 @@ Skelet Skelet::createSkelet(int lvl) {
   int baseHp{5};
   int baseArmor{0};
   int baseAtk{2};
-  int baseExpForKill{300};
+  int baseExpForKill{100 * (lvl != 0 ? lvl : 1)};
   int baseTotalExp{lvl == 0 ? lvlInfo::lvlSteps[0]
                             : lvlInfo::lvlSteps[lvl - 1]};
   int baseStrength{1 + strg};
@@ -57,37 +57,45 @@ void Skelet::Update(float dt, Vector2 dir,
     return;
   }
 
-  timer_ -= dt;
+  bool busy = (state_ == SkeletState::Attack || state_ == SkeletState::Hurt);
 
   if (attack_cooldown_ > 0) attack_cooldown_ -= dt;
-  if (hurt_timer_ > 0) hurt_timer_ -= dt;
+  if (attack_cooldown_ <= 0) busy = false;
 
-  bool busy = (state_ == SkeletState::Attack || state_ == SkeletState::Hurt);
+  timer_ -= dt;
+  if (hurt_timer_ > 0) hurt_timer_ -= dt;
 
   float dx = (heroPos.x + 192.0f) - (pos_.x + 192.0f);
   float dy = (heroPos.y + 192.0f) - (pos_.y + 192.0f);
   float distance = std::hypot(dx, dy);
+  Vector2 to_hero = (distance > 0.001f) ? Vector2{dx / distance, dy / distance}
+                                        : Vector2{0.0f, 0.0f};
 
-  bool is_attack = (distance <= 100);
-  bool is_chasing = (distance > 100.0f && distance < 400.0f);
+  auto updateFacing = [&](Vector2 look_dir) {
+    if (std::abs(look_dir.x) > std::abs(look_dir.y)) {
+      facing_ = (look_dir.x < 0) ? RIGHT : LEFT;
+    } else {
+      facing_ = (look_dir.y < 0) ? UP : DOWN;
+    };
+  };
 
-  if (is_attack && attack_cooldown_ <= 0.0) {
+  bool is_chasing = (distance > 95.0f && distance < 1000.0f);
+
+  if (distance <= 95 && attack_cooldown_ <= 0.0) {
     state_ = SkeletState::Attack;
     hit_applied_ = false;
-    attack_cooldown_ = 2.0f;
+    attack_cooldown_ = 1.0f + Random::getF(0.1f, 3.0f);
+    updateFacing(to_hero);
   } else if (is_chasing && !busy) {
-    state_ = SkeletState::Run;
+    int rnd = Random::get(1, 100);
+    if (rnd > 90)
+      state_ = SkeletState::Run;
+    else if (rnd >= 100)
+      state_ = SkeletState::RunCooldown;
 
-    Vector2 chase_dir = {dx / distance, dy / distance};
-
-    tryMoveX(chase_dir.x * speed_ * dt, obstacles);
-    tryMoveY(chase_dir.y * speed_ * dt, obstacles);
-
-    if (std::abs(chase_dir.x) > std::abs(chase_dir.y)) {
-      facing_ = (chase_dir.x < 0) ? RIGHT : LEFT;
-    } else {
-      facing_ = (chase_dir.y < 0) ? UP : DOWN;
-    }
+    tryMoveX(to_hero.x * speed_ * dt, obstacles);
+    tryMoveY(to_hero.y * speed_ * dt, obstacles);
+    updateFacing(to_hero);
 
   } else if (!busy && rand_dir_.x == 0 && rand_dir_.y == 0) {
     state_ = SkeletState::Idle;

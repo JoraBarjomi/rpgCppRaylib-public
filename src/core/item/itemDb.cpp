@@ -13,17 +13,16 @@ const std::unordered_map<int, ItemTemplate> ITEM_DB = []() {
        ItemRarity::Epic, 40, PotionStats{40}},
       {5, "Healing Elixir", "Heal 100 hp", ItemType::Potion, true, 5,
        ItemRarity::Legendary, 80, PotionStats{100}},
-      // {6, "Iron Ring", "Gain +5 armor", ItemType::Ring, false, 1,
-      //  ItemRarity::Common, 20, AccessoryStats{.armorBonus = 5}},
-      // {7, "Magic Ring", "Gain +100 attack dmg", ItemType::Ring, false, 1,
-      //  ItemRarity::Legendary, 120, AccessoryStats{.attackBonus = 100}},
-      // {8, "Iron Sword", "Gain +20 attack dmg", ItemType::Weapon, false, 1,
-      //  ItemRarity::Common, 60, AccessoryStats{.attackBonus = 100}},
-      // {9, "Iron Armor", "Gain +40 armor", ItemType::Armor, false, 1,
-      //  ItemRarity::Common, 100, AccessoryStats{.attackBonus = 100}},
-      // {10, "Amulet of Strength", "Gain +20 strength", ItemType::Amulet,
-      // false,
-      //  1, ItemRarity::Common, 125, AccessoryStats{.attackBonus = 100}},
+      {6, "Iron Ring", "Gain +5 armor", ItemType::Ring, false, 1,
+       ItemRarity::Common, 20, AccessoryStats{.armorBonus = 5}},
+      {7, "Magic Ring", "Gain +100 attack dmg", ItemType::Ring, false, 1,
+       ItemRarity::Legendary, 120, AccessoryStats{.attackBonus = 100}},
+      {8, "Iron Sword", "Gain +20 attack dmg", ItemType::Weapon, false, 1,
+       ItemRarity::Common, 60, AccessoryStats{.attackBonus = 100}},
+      {9, "Iron Armor", "Gain +40 armor", ItemType::Armor, false, 1,
+       ItemRarity::Common, 100, AccessoryStats{.attackBonus = 100}},
+      {10, "Amulet of Strength", "Gain +20 strength", ItemType::Amulet, false,
+       1, ItemRarity::Common, 125, AccessoryStats{.attackBonus = 100}},
   }};
 
   for (const auto& item : ITEMS) db[item.id] = item;
@@ -52,11 +51,12 @@ std::unique_ptr<Item> createItem(int id) {
 }
 
 std::unique_ptr<Item> createRndItem() {
-  auto id{Random::get(1, 5)};
+  auto id{Random::get(1, 10)};
   auto it{ITEM_DB.find(id)};
   if (it == ITEM_DB.end()) return nullptr;
 
   const auto& t = it->second;
+  const auto type = t.type;  // Weapon, Armor, Ring, Amulet, Potion
 
   return std::visit(
       [&](const auto& stats) -> std::unique_ptr<Item> {
@@ -66,7 +66,20 @@ std::unique_ptr<Item> createRndItem() {
               t.id, std::string(t.name), std::string(t.description), t.type,
               t.stackable, t.maxStack, t.rarity, t.cost, stats.healAmount);
         } else if constexpr (std::is_same_v<StatsType, AccessoryStats>) {
-          return std::make_unique<Ring>(t);
+          switch (type) {
+            // case ItemType::Weapon:
+            //   return std::make_unique<Ring>(t);
+            case ItemType::Ring:
+              return std::make_unique<Ring>(t);
+              // case ItemType::Ring:
+              //   return std::make_unique<Ring>(t);
+              // case ItemType::Ring:
+              //   return std::make_unique<Ring>(t);
+              // case ItemType::Ring:
+
+            default:
+              return std::make_unique<Ring>(t);
+          }
         }
         return nullptr;
       },

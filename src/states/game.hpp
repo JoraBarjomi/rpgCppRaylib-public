@@ -58,7 +58,8 @@ static void ConnectHeroSignals(Hero& hero, Logger& logger,
 enum class GameResult { Quit, Restart };
 
 static GameResult RunSession(SoundManager& audio, HeroView& heroView,
-                             SkeletView& baseSkeletView, TileView& tiles) {
+                             SkeletView& baseSkeletView, TileView& tiles,
+                             PotionView& potions) {
   int currentFps = 120;
   int menuAction = 0;
 
@@ -175,11 +176,11 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
       if (spawn_timer <= 0.0f && skeletons.size() < max_skeletons) {
         spawn_timer = spawn_interval;
         for (size_t i = 0; i < 3; i++) {
-          Skelet newShkilet = Skelet::createSkelet(Random::get(0, 5));
+          Skelet newShkilet = Skelet::createSkelet(Random::get(0, 2));
           float rx =
-              hero.getPos().x + static_cast<float>(Random::get(-1000, 1000));
+              hero.getPos().x + static_cast<float>(Random::get(-2500, 2500));
           float ry =
-              hero.getPos().y + static_cast<float>(Random::get(-1000, 1000));
+              hero.getPos().y + static_cast<float>(Random::get(-2500, 2500));
           newShkilet.setPos(rx, ry);
           skeletons.push_back(newShkilet);
           skeletonsView.push_back(baseSkeletView);
@@ -281,7 +282,7 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
               h, hero.getHp(), hero.getMaxHp(), hero.getHpGhost(), dt);
     // DrawText(TextFormat("(%i)", hero.getLvl()), 10, 10, 20, GOLD);
     if (menuOpen && tab == Tab::Inventory) {
-      int clicked = DrawInventory(MakeInvView(hero), S);
+      int clicked = DrawInventory(MakeInvView(hero), potions, S);
       if (clicked >= 0 && clicked < (int)hero.inventory.getSlots().size()) {
         hero.UseItemAt(clicked);
       }
