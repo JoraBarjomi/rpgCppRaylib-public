@@ -9,6 +9,7 @@
 #include "../../render/TextureManager.hpp"
 #include "../../render/logger/Logger.hpp"
 #include "../unit/Unit.h"
+#include "inventory/inventory.hpp"
 #include "raylib.h"
 
 class HeroView;
@@ -37,6 +38,10 @@ class Hero : public Unit {
   Signal<> onStep;
   Signal<> onAttack;
   Signal<> onHitEnemy;
+  //
+
+  //
+  Inventory inventory;
   //
 
   Hero(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
@@ -104,6 +109,8 @@ class Hero : public Unit {
     atrb_points_ -= spend;
     onAgilityChanged.Emit(atrb_.agility_);
   }
+
+  void heal(int points);
 
  protected:
   int max_hp_;

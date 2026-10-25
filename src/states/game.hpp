@@ -186,6 +186,7 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
           if (!s.isDead() &&
               CheckCollisionRecs(hero.getRangebox(), s.getHitbox())) {
             auto res = hero.attackUnit(s);
+            hero.onHitEnemy.Emit();
             if (res.isEnemyDead)
               audio.Play("skeletDeath", true);
             else
@@ -209,7 +210,6 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
           if (CheckCollisionRecs(skeletons[i].getRangebox(),
                                  hero.getHitbox())) {
             skeletons[i].attackUnit(hero);
-            hero.onHitEnemy.Emit();
           }
           skeletons[i].markHitApplied();
         }

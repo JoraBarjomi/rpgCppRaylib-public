@@ -182,3 +182,11 @@ LvlUpEvent Hero::isLvlUp() {
   };
   return event;
 }
+
+void Hero::heal(int points) {
+  if (points <= 0) return;
+  if (isDead()) return;
+  int oldHp = hp_;
+  hp_ = std::min(hp_ + points, max_hp_);
+  if (oldHp != hp_) onHpChanged.Emit(hp_);
+}

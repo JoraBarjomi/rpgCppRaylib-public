@@ -125,7 +125,11 @@ GENERATED += $(OBJDIR)/Skelet.o
 GENERATED += $(OBJDIR)/TextureManager.o
 GENERATED += $(OBJDIR)/TileView.o
 GENERATED += $(OBJDIR)/Unit.o
+GENERATED += $(OBJDIR)/inventory.o
+GENERATED += $(OBJDIR)/itemDb.o
 GENERATED += $(OBJDIR)/main.o
+GENERATED += $(OBJDIR)/potion.o
+GENERATED += $(OBJDIR)/ring.o
 GENERATED += $(OBJDIR)/skeletView.o
 GENERATED += $(OBJDIR)/stateManager.o
 OBJECTS += $(OBJDIR)/Hero.o
@@ -135,7 +139,11 @@ OBJECTS += $(OBJDIR)/Skelet.o
 OBJECTS += $(OBJDIR)/TextureManager.o
 OBJECTS += $(OBJDIR)/TileView.o
 OBJECTS += $(OBJDIR)/Unit.o
+OBJECTS += $(OBJDIR)/inventory.o
+OBJECTS += $(OBJDIR)/itemDb.o
 OBJECTS += $(OBJDIR)/main.o
+OBJECTS += $(OBJDIR)/potion.o
+OBJECTS += $(OBJDIR)/ring.o
 OBJECTS += $(OBJDIR)/skeletView.o
 OBJECTS += $(OBJDIR)/stateManager.o
 
@@ -202,6 +210,18 @@ endif
 # #############################################
 
 $(OBJDIR)/Hero.o: src/core/hero/Hero.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/inventory.o: src/core/hero/inventory/inventory.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/itemDb.o: src/core/item/itemDb.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/potion.o: src/core/item/potion.cpp
+	@echo "$(notdir $<)"
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/ring.o: src/core/item/ring.cpp
 	@echo "$(notdir $<)"
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/Skelet.o: src/core/skelet/Skelet.cpp
