@@ -41,7 +41,7 @@ class Hero : public Unit {
   //
 
   //
-  Inventory inventory;
+  Inventory inventory{72};
   //
 
   Hero(int lvl, int totalExp, int hp, int armor, int atk, int expForKill,
@@ -111,6 +111,8 @@ class Hero : public Unit {
   }
 
   void heal(int points);
+
+  void UseItemAt(int clicked);
 
  protected:
   int max_hp_;

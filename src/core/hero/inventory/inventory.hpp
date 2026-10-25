@@ -41,6 +41,9 @@ class Inventory {
   bool removeItem(int itemId, int quantity = 1);
   bool useItem(int itemId, Hero& player);
 
+  bool useSlot(int index, Hero& player);
+  void removeFromSlot(int index, int q = 1);
+
   std::shared_ptr<Item> findItem(int itemId) const;
 
   bool equipItem(int itemId, EquipSlots targetSlot);

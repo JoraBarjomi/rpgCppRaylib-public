@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "../ItemView.hpp"
 #include "../Ui.hpp"
 #include "raylib.h"
 
@@ -167,4 +168,80 @@ inline int DrawQuitRestartMenu(Hero& hero, int S,
   }
 
   return 0;
+}
+
+inline std::vector<ItemView> MakeInvView(const Hero& hero) {
+  std::vector<ItemView> out;
+  for (const auto& it : hero.inventory.getSlots()) {
+    if (!it.item) {
+      out.push_back({});
+      continue;
+    }
+    out.push_back({it.item->getName(), it.item->getId(), it.quantity});
+  }
+  return out;
+}
+
+inline int DrawInventory(const std::vector<ItemView>& slots, int S,
+                         const Font& font = GetFontDefault()) {
+  constexpr int COLS = 6, ROWS = 12;
+
+  const int cell = 20 * S, gapCell = 2 * S, pad = 8 * S, titleH = 14 * S;
+  const float gap = 64.0f * S;
+  const float fs = 9.0 * S;
+
+  const int gridW = COLS * cell + (COLS - 1) * gapCell;
+  const int gridH = ROWS * cell + (ROWS - 1) * gapCell;
+
+  const float W = gridW + pad * 2, H = gridH + pad * 2 + titleH;
+
+  const float margin = 20.0f * S;
+  const float X = GetScreenWidth() - W - margin,
+              Y = GetScreenHeight() - H - margin;
+
+  DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.8f));
+  ui::Panel({X, Y, W, H}, S);
+
+  float x1 = X + pad;
+  float y1 = Y + pad;
+
+  ui::Header(font, "INVENTORY", x1, y1, gridW, fs, S);
+
+  Vector2 mouse = GetMousePosition();
+  int clicked = -1, hovered = -1;
+  const int gx = x1, gy = y1;
+
+  for (int i = 0; i < COLS * ROWS; i++) {
+    Rectangle r{(float)(gx + (i % COLS) * (cell + gapCell)),
+                (float)(gy + (i / COLS) * (cell + gapCell)), (float)cell,
+                (float)cell};
+    bool hover = CheckCollisionPointRec(mouse, r);
+    DrawRectangleRec(r,
+                     hover ? Color{70, 55, 45, 255} : Color{40, 30, 30, 255});
+    DrawRectangleLinesEx(
+        r, 1, hover ? Color{220, 180, 90, 255} : Color{80, 65, 50, 255});
+
+    if (i < (int)slots.size() && !slots[i].empty()) {
+      DrawRectangle((int)r.x + 4 * S, (int)r.y + 4 * S, cell - 8 * S,
+                    cell - 8 * S, {150, 120, 80, 255});
+      if (slots[i].count > 1) {
+        DrawTextEx(font, TextFormat("%d", slots[i].count),
+                   {r.x + r.width - 8.0f * S, r.y + r.height - 9.0f * S},
+                   7.0f * S, 1, WHITE);
+      }
+      if (hover) hovered = i;
+      if (hover && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) clicked = i;
+    }
+  }
+
+  if (hovered >= 0) {
+    const char* t = slots[hovered].name.c_str();
+    Vector2 sz = MeasureTextEx(font, t, fs, 1);
+    float tx = std::min(mouse.x + 12, GetScreenWidth() - sz.x - 8.0f * S);
+    float ty = std::min(mouse.y + 12, GetScreenHeight() - sz.y - 8.0f * S);
+    DrawRectangle((int)tx - 4 * S, (int)ty - 3 * S, (int)sz.x + 8 * S,
+                  (int)sz.y + 6 * S, {10, 8, 8, 240});
+    DrawTextEx(font, t, {tx, ty}, fs, 1, WHITE);
+  }
+  return clicked;
 }

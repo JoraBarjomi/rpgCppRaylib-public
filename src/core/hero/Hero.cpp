@@ -190,3 +190,5 @@ void Hero::heal(int points) {
   hp_ = std::min(hp_ + points, max_hp_);
   if (oldHp != hp_) onHpChanged.Emit(hp_);
 }
+
+void Hero::UseItemAt(int clicked) { inventory.useSlot(clicked, *this); }

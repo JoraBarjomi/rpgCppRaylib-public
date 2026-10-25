@@ -66,6 +66,21 @@ bool Inventory::useItem(int itemId, Hero& player) {
   return false;
 }
 
+bool Inventory::useSlot(int index, Hero& player) {
+  if (index < 0 || index >= (int)m_slots.size()) return false;
+  std::shared_ptr<Item> item = m_slots[index].item;
+  if (!item) return false;
+  bool ok = item->use(player);
+  if (ok) removeFromSlot(index, 1);
+  return ok;
+}
+
+void Inventory::removeFromSlot(int index, int q) {
+  auto& s = m_slots[index];
+  s.quantity -= q;
+  if (s.quantity <= 0) m_slots.erase(m_slots.begin() + index);
+}
+
 std::shared_ptr<Item> Inventory::findItem(int itemId) const {
   for (const auto& slot : m_slots) {
     if (slot.item && slot.item->getId() == itemId) return slot.item;
@@ -83,7 +98,7 @@ bool Inventory::equipItem(int itemId, EquipSlots targetSlot) {
   return true;
 }
 
-bool Inventory::unequipItem(EquipSlots targetSlot) {}
+bool Inventory::unequipItem(EquipSlots targetSlot) { return false; }
 
 int Inventory::getItemCount(int itemId) const {
   int total = 0;

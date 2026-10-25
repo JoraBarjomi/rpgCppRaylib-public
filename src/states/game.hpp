@@ -1,5 +1,8 @@
 #pragma once
+#include <memory>
+
 #include "../core/hero/Hero.hpp"
+#include "../core/item/itemDb.h"
 #include "../render/SoundManager.hpp"
 #include "../render/TextureManager.hpp"
 #include "../render/heroView/HeroHud.hpp"
@@ -60,6 +63,10 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
   int menuAction = 0;
 
   Hero hero = Hero::createHero(0);
+  for (size_t i = 0; i < 24; i++) {
+    hero.inventory.addItem(createRndItem(), 1);
+  }
+
   std::vector<Skelet> skeletons;
   std::vector<SkeletView> skeletonsView;
   Logger logger;
@@ -237,7 +244,7 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
       logger.Update(dt);
       if (!showRestartMenu) {
         showRestartMenu = true;
-        deadDelay = 3.0f;
+        deadDelay = 1.5f;
       }
     }
 
@@ -273,6 +280,12 @@ static GameResult RunSession(SoundManager& audio, HeroView& heroView,
     DrawHpBar(GetScreenWidth() / 2 - w / 2, GetScreenHeight() - h - margin, w,
               h, hero.getHp(), hero.getMaxHp(), hero.getHpGhost(), dt);
     // DrawText(TextFormat("(%i)", hero.getLvl()), 10, 10, 20, GOLD);
+    if (menuOpen && tab == Tab::Inventory) {
+      int clicked = DrawInventory(MakeInvView(hero), S);
+      if (clicked >= 0 && clicked < (int)hero.inventory.getSlots().size()) {
+        hero.UseItemAt(clicked);
+      }
+    }
     if (menuOpen && tab == Tab::Stats) {
       DrawStats(hero, S);
     }
